@@ -172,26 +172,19 @@ El resultado de una ronda **puede ser negativo**.
 
 ---
 
-## 11. Pendientes nuevos (por las dos barajas)
+## 11. Resueltos
 
-**[PENDIENTE 10] Cartas repetidas en un trío.**
-Con dos barajas existen dos 7♥. Si el trío exige palos distintos, entonces:
-- El trío **máximo es de 4 cartas** (uno de cada palo).
-- `7♥ 7♥ 7♠` **no** sería válido.
+**[RESUELTO 10] Palo en los tríos.** El palo NO importa. Con dos barajas,
+`7♥ 7♥ 7♠` es válido. Solo importa que sean 3 o más del mismo número.
+No hay tope de tamaño: el máximo natural es 8 (ocho cartas de cada número
+entre las dos barajas).
 
-¿Es correcto, o sí se vale repetir palo cuando viene de la otra baraja?
+**[RESUELTO 11] Escaleras repetidas.** Permitidas. Dos jugadores pueden
+tener la misma escalera en mesa.
 
-**[PENDIENTE 11] Escaleras repetidas.**
-¿Pueden existir dos escaleras iguales en la mesa (ej. `4♥ 5♥ 6♥` bajada por cada jugador)? Asumo que sí, pero confirmalo.
+**[RESUELTO 12] Largo de escalera.** Tope natural de 13 cartas (A a K).
 
-**[PENDIENTE 12] Largo máximo de la escalera.**
-Una escalera puede crecer hasta 13 cartas (A→K). ¿Se puede embonar hasta llegar ahí sin límite?
-
-**[PENDIENTE 13] ¿Se mantienen las 12 cartas?**
-Con 104 cartas y 2 jugadores, el mazo queda en 79 cartas y la ronda casi nunca se va a acabar por mazo agotado. ¿12 cartas está bien, o reparten más?
-
----
-
+**[RESUELTO 13] Tamaño de mano.** 12 cartas, como dice la sección 3.
 ## 12. Notas para el motor
 
 - El servidor es la única fuente de verdad: tiene el mazo y todas las manos.

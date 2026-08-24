@@ -6,7 +6,7 @@ final class Reglas
 {
     public const MIN_TRIO = 3;
 
-    public const MAX_TRIO = 4; // un cupo por cada palo
+    public const MAX_TRIO = 8; // tope natural: ocho cartas de cada número entre las dos barajas
 
     public const MIN_ESCALERA = 3;
 
@@ -21,15 +21,10 @@ final class Reglas
         }
 
         $numero = $cartas[0]->numero;
-        $palos = [];
         foreach ($cartas as $carta) {
             if ($carta->numero !== $numero) {
                 return false;
             }
-            if (isset($palos[$carta->palo])) {
-                return false; // palo repetido dentro del mismo trío
-            }
-            $palos[$carta->palo] = true;
         }
 
         return true;
@@ -149,8 +144,8 @@ final class Reglas
     }
 
     /**
-     * ¿Existe un trío de al menos MIN_TRIO cartas (mismo número, palos distintos)
-     * que incluya a $carta, usando cartas disponibles en $disponibles?
+     * ¿Existe un trío de al menos MIN_TRIO cartas del mismo número (el palo no
+     * importa) que incluya a $carta, usando cartas disponibles en $disponibles?
      *
      * @param Carta[] $disponibles
      */
@@ -161,12 +156,7 @@ final class Reglas
             fn (Carta $c) => $c->numero === $carta->numero && ! $c->esIgualA($carta)
         );
 
-        $palos = [$carta->palo => true];
-        foreach ($mismoNumero as $c) {
-            $palos[$c->palo] = true;
-        }
-
-        return count($palos) >= self::MIN_TRIO;
+        return count($mismoNumero) + 1 >= self::MIN_TRIO;
     }
 
     public static function puedeEmbonar(Carta $carta, JuegoMesa $juego): bool
@@ -177,16 +167,8 @@ final class Reglas
             if (count($cartasJuego) >= self::MAX_TRIO) {
                 return false;
             }
-            if ($cartasJuego[0]->numero !== $carta->numero) {
-                return false;
-            }
-            foreach ($cartasJuego as $c) {
-                if ($c->palo === $carta->palo) {
-                    return false;
-                }
-            }
 
-            return true;
+            return $cartasJuego[0]->numero === $carta->numero;
         }
 
         // escalera
