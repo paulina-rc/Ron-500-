@@ -86,10 +86,24 @@ final class EstadoPartida
         return $this->jugadores[$this->turnoActual];
     }
 
-    /** @return string[] */
+    /**
+     * Los ids de los jugadores, siempre como string reales.
+     *
+     * PHP convierte automáticamente cualquier clave de array que "parezca" un
+     * entero decimal (p. ej. la clave "1") a int — sin importar cómo se haya
+     * generado esa clave. Como los jugadores se guardan en $this->jugadores
+     * indexados por su id, con ids numéricos (típico: ids autoincrement de una
+     * base de datos) array_keys() devolvería int en vez de string. Ese int, si
+     * después se compara con === contra un id que sí es string (como hace
+     * siguienteJugador más abajo), nunca es igual aunque representen "lo mismo".
+     * array_map('strval', ...) corrige eso: convierte cada clave a un valor de
+     * lista normal (ya no una clave de array), donde no vuelve a coercionarse.
+     *
+     * @return string[]
+     */
     public function idsJugadores(): array
     {
-        return array_keys($this->jugadores);
+        return array_map('strval', array_keys($this->jugadores));
     }
 
     public function siguienteJugador(string $actual): string

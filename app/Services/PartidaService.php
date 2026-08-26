@@ -67,7 +67,9 @@ class PartidaService
     {
         $jugadores = [];
         foreach ($estado->jugadores as $id => $jugador) {
-            $jugadores[$id] = $id === $jugadorId
+            // $id puede venir como int si el id de jugador es numérico (PHP coerciona
+            // claves de array que parecen enteros): comparar como string siempre.
+            $jugadores[$id] = (string) $id === $jugadorId
                 ? [
                     'mano' => array_map(fn (Carta $c) => $this->cartaVisible($c), $jugador->mano),
                     'seHaBajado' => $jugador->seHaBajado,

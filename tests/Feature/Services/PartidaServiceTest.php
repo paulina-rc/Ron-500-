@@ -77,4 +77,19 @@ class PartidaServiceTest extends TestCase
         $this->assertCount(12, $estadoFinal->jugadores[$turno]->mano);
         $this->assertNotSame($turno, $estadoFinal->turnoActual, 'el turno debe haber avanzado tras el botar');
     }
+
+    public function test_vista_para_jugador_no_confunde_ids_numericos(): void
+    {
+        // PHP coerciona claves de array que parecen enteros ("1", "2") a int; si
+        // vistaParaJugador comparara esa clave contra el jugadorId con === sin
+        // convertir a string, le mandaría la mano del jugador equivocado.
+        $estado = EstadoPartida::iniciar(['1', '2'], semilla: 9);
+        $servicio = new PartidaService;
+
+        $vista = $servicio->vistaParaJugador($estado, '1');
+
+        $this->assertArrayHasKey('mano', $vista['jugadores']['1']);
+        $this->assertArrayNotHasKey('mano', $vista['jugadores']['2']);
+        $this->assertSame(12, $vista['jugadores']['2']['cantidadCartas']);
+    }
 }
