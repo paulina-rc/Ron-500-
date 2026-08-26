@@ -78,6 +78,12 @@ final class MotorRumi
             throw new JugadaIlegalException('Esa jugada no es válida: no forma un trío ni una escalera.');
         }
 
+        if (count($jugador->mano) - count($cartaIds) === 0) {
+            throw new JugadaIlegalException(
+                'No podés bajar esas cartas: te quedarías sin nada que botar, y hay que botar siempre para cerrar el turno.'
+            );
+        }
+
         $nuevo = $estado->clonar();
         foreach ($cartaIds as $id) {
             $nuevo->jugadores[$jugadorId]->quitarCarta($id);
@@ -114,6 +120,12 @@ final class MotorRumi
         $juego = $estado->mesa[$juegoId];
         if (! Reglas::puedeEmbonar($carta, $juego)) {
             throw new JugadaIlegalException('Esa carta no embona en ese juego.');
+        }
+
+        if (count($jugador->mano) === 1) {
+            throw new JugadaIlegalException(
+                'No podés embonar esa carta: te quedarías sin nada que botar, y hay que botar siempre para cerrar el turno.'
+            );
         }
 
         $nuevo = $estado->clonar();

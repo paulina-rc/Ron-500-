@@ -9,21 +9,22 @@ use App\Domain\Rumi\Palo;
 
 class MotorBotarTest extends CasoDePruebaRumi
 {
-    public function test_bajar_todas_las_cartas_no_cierra_la_ronda_hay_que_botar(): void
+    public function test_bajar_no_cierra_la_ronda_hay_que_botar_ademas(): void
     {
         $siete1 = $this->carta('7', Palo::CORAZONES);
         $siete2 = $this->carta('7', Palo::DIAMANTES);
         $siete3 = $this->carta('7', Palo::PICAS);
+        $ultima = $this->carta('9', Palo::TREBOLES);
 
         $estado = $this->estado(
-            manoJ1: [$siete1, $siete2, $siete3],
+            manoJ1: [$siete1, $siete2, $siete3, $ultima],
             manoJ2: [],
             fase: EstadoPartida::PUEDE_JUGAR,
         );
 
         $nuevo = MotorRumi::bajar($estado, 'j1', [$siete1->id, $siete2->id, $siete3->id]);
 
-        $this->assertCount(0, $nuevo->jugadores['j1']->mano);
+        $this->assertCount(1, $nuevo->jugadores['j1']->mano);
         $this->assertFalse($nuevo->rondaTerminada);
         $this->assertNull($nuevo->ganadorRonda);
         $this->assertSame('j1', $nuevo->turnoActual, 'sigue siendo su turno: falta botar');

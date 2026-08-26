@@ -16,9 +16,10 @@ class MotorBajarEmbonarTest extends CasoDePruebaRumi
         $siete1 = $this->carta('7', Palo::CORAZONES);
         $siete2 = $this->carta('7', Palo::DIAMANTES);
         $siete3 = $this->carta('7', Palo::PICAS);
+        $otra = $this->carta('9', Palo::TREBOLES);
 
         $estado = $this->estado(
-            manoJ1: [$siete1, $siete2, $siete3],
+            manoJ1: [$siete1, $siete2, $siete3, $otra],
             manoJ2: [],
             fase: EstadoPartida::PUEDE_JUGAR,
         );
@@ -30,7 +31,8 @@ class MotorBajarEmbonarTest extends CasoDePruebaRumi
         $this->assertSame(JuegoMesa::TRIO, $juego->tipo);
         $this->assertCount(3, $juego->cartas);
         $this->assertTrue($nuevo->jugadores['j1']->seHaBajado);
-        $this->assertCount(0, $nuevo->jugadores['j1']->mano);
+        $this->assertCount(1, $nuevo->jugadores['j1']->mano);
+        $this->assertTrue($nuevo->jugadores['j1']->tieneCarta($otra->id));
 
         // el estado original no se muta
         $this->assertFalse($estado->jugadores['j1']->seHaBajado);
@@ -70,9 +72,10 @@ class MotorBajarEmbonarTest extends CasoDePruebaRumi
         ];
 
         $sieteClub = $this->carta('7', Palo::TREBOLES);
+        $otra = $this->carta('9', Palo::PICAS);
         $estado = $this->estado(
             manoJ1: [],
-            manoJ2: [$sieteClub],
+            manoJ2: [$sieteClub, $otra],
             mesa: $mesa,
             turno: 'j2',
             fase: EstadoPartida::PUEDE_JUGAR,
@@ -90,9 +93,9 @@ class MotorBajarEmbonarTest extends CasoDePruebaRumi
         ))[0];
         $this->assertSame('j2', $embonada->propietarioId);
 
-        // j1 puso 3 sietes (15 pts), j2 embonó 1 siete (5 pts): cada quien se queda con lo suyo.
+        // j1 puso 3 sietes (15 pts), j2 embonó 1 siete (5 pts) pero le quedó el 9♠ (5 pts) en mano: cada quien se queda con lo suyo.
         $this->assertSame(15, MotorRumi::puntosDeRonda($nuevo, 'j1'));
-        $this->assertSame(5, MotorRumi::puntosDeRonda($nuevo, 'j2'));
+        $this->assertSame(0, MotorRumi::puntosDeRonda($nuevo, 'j2'));
     }
 
     public function test_una_escalera_se_puede_extender_por_abajo_y_por_arriba(): void
@@ -107,9 +110,10 @@ class MotorBajarEmbonarTest extends CasoDePruebaRumi
 
         $tres = $this->carta('3', Palo::CORAZONES);
         $siete = $this->carta('7', Palo::CORAZONES);
+        $otra = $this->carta('9', Palo::PICAS);
 
         $estado = $this->estado(
-            manoJ1: [$tres, $siete],
+            manoJ1: [$tres, $siete, $otra],
             manoJ2: [],
             mesa: $mesa,
             fase: EstadoPartida::PUEDE_JUGAR,
