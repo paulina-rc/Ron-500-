@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Domain\Rumi\Carta;
+use App\Domain\Rumi\CartaEnMesa;
 use App\Domain\Rumi\EstadoPartida;
+use App\Domain\Rumi\MotorRumi;
 use App\Models\Partida;
 use App\Models\Sala;
 use Illuminate\Support\Facades\DB;
@@ -53,5 +56,65 @@ class PartidaService
 
             return $partida;
         });
+    }
+
+    /**
+     * Arma la vista de $estado para $jugadorId: su mano completa, pero de cualquier
+     * otro jugador solo la cantidad de cartas. La basura y la mesa se ven completas
+     * (son públicas por regla), cada carta de mesa con su propietario.
+     */
+    public function vistaParaJugador(EstadoPartida $estado, string $jugadorId): array
+    {
+        $jugadores = [];
+        foreach ($estado->jugadores as $id => $jugador) {
+            $jugadores[$id] = $id === $jugadorId
+                ? [
+                    'mano' => array_map(fn (Carta $c) => $this->cartaVisible($c), $jugador->mano),
+                    'seHaBajado' => $jugador->seHaBajado,
+                ]
+                : [
+                    'cantidadCartas' => count($jugador->mano),
+                    'seHaBajado' => $jugador->seHaBajado,
+                ];
+        }
+
+        $mesa = [];
+        foreach ($estado->mesa as $id => $juego) {
+            $mesa[$id] = [
+                'tipo' => $juego->tipo,
+                'cartas' => array_map(fn (CartaEnMesa $c) => [
+                    'carta' => $this->cartaVisible($c->carta),
+                    'propietarioId' => $c->propietarioId,
+                ], $juego->cartas),
+            ];
+        }
+
+        $puntajes = [];
+        foreach ($estado->idsJugadores() as $id) {
+            $puntajes[$id] = MotorRumi::puntosDeRonda($estado, $id);
+        }
+
+        return [
+            'turnoActual' => $estado->turnoActual,
+            'fase' => $estado->fase,
+            'cartaObligatoriaId' => $estado->cartaObligatoriaId,
+            'rondaTerminada' => $estado->rondaTerminada,
+            'ganadorRonda' => $estado->ganadorRonda,
+            'cartasEnMazo' => count($estado->mazo),
+            'basura' => array_map(fn (Carta $c) => $this->cartaVisible($c), $estado->basura),
+            'mesa' => $mesa,
+            'jugadores' => $jugadores,
+            'puntajes' => $puntajes,
+        ];
+    }
+
+    private function cartaVisible(Carta $carta): array
+    {
+        return [
+            'id' => $carta->id,
+            'numero' => $carta->numero,
+            'palo' => $carta->palo,
+            'puntos' => $carta->puntos(),
+        ];
     }
 }

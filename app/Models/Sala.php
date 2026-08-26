@@ -55,4 +55,10 @@ class Sala extends Model
 
         return $codigo;
     }
+
+    /** Permite {sala:codigo} en las rutas, sin importar mayúsculas/minúsculas. */
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        return $this->where('codigo', strtoupper($value))->first();
+    }
 }
