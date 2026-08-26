@@ -53,4 +53,23 @@ final class Jugador
     {
         return array_sum(array_map(fn (Carta $c) => $c->puntos(), $this->mano));
     }
+
+    /** @return array{id: string, mano: array, seHaBajado: bool} */
+    public function aArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'mano' => array_values(array_map(fn (Carta $c) => $c->aArray(), $this->mano)),
+            'seHaBajado' => $this->seHaBajado,
+        ];
+    }
+
+    public static function desdeArray(array $datos): self
+    {
+        return new self(
+            $datos['id'],
+            array_map(fn (array $c) => Carta::desdeArray($c), $datos['mano']),
+            $datos['seHaBajado'],
+        );
+    }
 }

@@ -42,4 +42,23 @@ final class JuegoMesa
 
         return $rango;
     }
+
+    /** @return array{id: string, tipo: string, cartas: array} */
+    public function aArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'tipo' => $this->tipo,
+            'cartas' => array_values(array_map(fn (CartaEnMesa $c) => $c->aArray(), $this->cartas)),
+        ];
+    }
+
+    public static function desdeArray(array $datos): self
+    {
+        return new self(
+            $datos['id'],
+            $datos['tipo'],
+            array_map(fn (array $c) => CartaEnMesa::desdeArray($c), $datos['cartas']),
+        );
+    }
 }

@@ -44,4 +44,19 @@ final class Carta
     {
         return $this->id === $otra->id;
     }
+
+    /** @return array{numero: string, palo: string, copia: int} */
+    public function aArray(): array
+    {
+        return [
+            'numero' => $this->numero,
+            'palo' => $this->palo,
+            'copia' => $this->copia,
+        ];
+    }
+
+    public static function desdeArray(array $datos): self
+    {
+        return new self($datos['numero'], $datos['palo'], $datos['copia']);
+    }
 }

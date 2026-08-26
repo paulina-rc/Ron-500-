@@ -99,4 +99,56 @@ final class EstadoPartida
 
         return $ids[($i + 1) % count($ids)];
     }
+
+    /** Arreglo plano (solo tipos escalares/arreglos) listo para json_encode. */
+    public function aArray(): array
+    {
+        $jugadores = [];
+        foreach ($this->jugadores as $id => $jugador) {
+            $jugadores[$id] = $jugador->aArray();
+        }
+
+        $mesa = [];
+        foreach ($this->mesa as $id => $juego) {
+            $mesa[$id] = $juego->aArray();
+        }
+
+        return [
+            'jugadores' => $jugadores,
+            'mazo' => array_values(array_map(fn (Carta $c) => $c->aArray(), $this->mazo)),
+            'basura' => array_values(array_map(fn (Carta $c) => $c->aArray(), $this->basura)),
+            'mesa' => $mesa,
+            'turnoActual' => $this->turnoActual,
+            'fase' => $this->fase,
+            'cartaObligatoriaId' => $this->cartaObligatoriaId,
+            'rondaTerminada' => $this->rondaTerminada,
+            'ganadorRonda' => $this->ganadorRonda,
+        ];
+    }
+
+    /** Reconstruye el estado a partir del arreglo producido por aArray(). */
+    public static function desdeArray(array $datos): self
+    {
+        $jugadores = [];
+        foreach ($datos['jugadores'] as $id => $jugador) {
+            $jugadores[$id] = Jugador::desdeArray($jugador);
+        }
+
+        $mesa = [];
+        foreach ($datos['mesa'] as $id => $juego) {
+            $mesa[$id] = JuegoMesa::desdeArray($juego);
+        }
+
+        return new self(
+            jugadores: $jugadores,
+            mazo: array_map(fn (array $c) => Carta::desdeArray($c), $datos['mazo']),
+            basura: array_map(fn (array $c) => Carta::desdeArray($c), $datos['basura']),
+            mesa: $mesa,
+            turnoActual: $datos['turnoActual'],
+            fase: $datos['fase'],
+            cartaObligatoriaId: $datos['cartaObligatoriaId'],
+            rondaTerminada: $datos['rondaTerminada'],
+            ganadorRonda: $datos['ganadorRonda'],
+        );
+    }
 }
