@@ -84,6 +84,7 @@ class PartidaService
         foreach ($estado->mesa as $id => $juego) {
             $mesa[$id] = [
                 'tipo' => $juego->tipo,
+                'creadorId' => $juego->creadorId,
                 'cartas' => array_map(fn (CartaEnMesa $c) => [
                     'carta' => $this->cartaVisible($c->carta),
                     'propietarioId' => $c->propietarioId,

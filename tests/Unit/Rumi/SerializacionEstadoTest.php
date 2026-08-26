@@ -12,13 +12,13 @@ class SerializacionEstadoTest extends CasoDePruebaRumi
     public function test_serializar_y_reconstruir_da_un_estado_identico(): void
     {
         $mesa = [
-            'j1' => new JuegoMesa('j1', JuegoMesa::TRIO, [
+            'j1' => new JuegoMesa('j1', JuegoMesa::TRIO, 'j1', [
                 new CartaEnMesa($this->carta('7', Palo::CORAZONES), 'j1'),
                 new CartaEnMesa($this->carta('7', Palo::DIAMANTES), 'j1'),
                 // embonada por j2: el dueño de esta carta es distinto del dueño del juego
                 new CartaEnMesa($this->carta('7', Palo::PICAS), 'j2'),
             ]),
-            'j2' => new JuegoMesa('j2', JuegoMesa::ESCALERA, [
+            'j2' => new JuegoMesa('j2', JuegoMesa::ESCALERA, 'j2', [
                 new CartaEnMesa($this->carta('4', Palo::TREBOLES), 'j2'),
                 new CartaEnMesa($this->carta('5', Palo::TREBOLES), 'j2'),
                 new CartaEnMesa($this->carta('6', Palo::TREBOLES), 'j1'),
@@ -53,6 +53,11 @@ class SerializacionEstadoTest extends CasoDePruebaRumi
         $this->assertSame('j2', $reconstruido->mesa['j1']->cartas[2]->propietarioId);
         $this->assertSame('j1', $reconstruido->mesa['j2']->cartas[2]->propietarioId);
         $this->assertSame(Palo::PICAS, $reconstruido->mesa['j1']->cartas[2]->carta->palo);
+
+        // el creador del juego (quién lo bajó) también debe sobrevivir el ida y vuelta,
+        // sin confundirse con el dueño de cada carta embonada
+        $this->assertSame('j1', $reconstruido->mesa['j1']->creadorId);
+        $this->assertSame('j2', $reconstruido->mesa['j2']->creadorId);
 
         $this->assertTrue($reconstruido->jugadores['j1']->seHaBajado);
         $this->assertSame($original->cartaObligatoriaId, $reconstruido->cartaObligatoriaId);

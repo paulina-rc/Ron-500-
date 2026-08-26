@@ -34,7 +34,7 @@ class ReservaDeCartaParaBotarTest extends CasoDePruebaRumi
     public function test_embonar_la_ultima_carta_de_la_mano_lanza_excepcion(): void
     {
         $mesa = [
-            'j1trio' => new JuegoMesa('j1trio', JuegoMesa::TRIO, [
+            'j1trio' => new JuegoMesa('j1trio', JuegoMesa::TRIO, 'j1', [
                 new CartaEnMesa($this->carta('7', Palo::CORAZONES), 'j1'),
                 new CartaEnMesa($this->carta('7', Palo::DIAMANTES), 'j1'),
                 new CartaEnMesa($this->carta('7', Palo::PICAS), 'j1'),

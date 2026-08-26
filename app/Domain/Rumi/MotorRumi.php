@@ -92,7 +92,7 @@ final class MotorRumi
         $juegoId = 'j'.(count($nuevo->mesa) + 1);
         $cartasEnMesa = array_map(fn (Carta $c) => new CartaEnMesa($c, $jugadorId), $cartas);
 
-        $nuevo->mesa[$juegoId] = new JuegoMesa($juegoId, $tipo, $cartasEnMesa);
+        $nuevo->mesa[$juegoId] = new JuegoMesa($juegoId, $tipo, $jugadorId, $cartasEnMesa);
         $nuevo->jugadores[$jugadorId]->seHaBajado = true;
 
         return $nuevo;

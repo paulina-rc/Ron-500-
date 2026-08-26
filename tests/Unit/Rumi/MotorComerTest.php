@@ -99,7 +99,7 @@ class MotorComerTest extends CasoDePruebaRumi
         $dosCorazones = $this->carta('2', Palo::CORAZONES);
 
         $mesa = [
-            'j1trio' => new JuegoMesa('j1trio', JuegoMesa::TRIO, [
+            'j1trio' => new JuegoMesa('j1trio', JuegoMesa::TRIO, 'j1', [
                 new CartaEnMesa($this->carta('2', Palo::DIAMANTES), 'j1'),
                 new CartaEnMesa($this->carta('2', Palo::PICAS), 'j1'),
                 new CartaEnMesa($this->carta('2', Palo::TREBOLES), 'j1'),

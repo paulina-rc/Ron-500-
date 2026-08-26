@@ -117,21 +117,6 @@
         elRivalCantidad.textContent = cantidad + (cantidad === 1 ? ' carta' : ' cartas');
     }
 
-    /**
-     * Marca de dueño: SOLO en las cartas cuyo dueño es distinto al del jugador
-     * que bajó la jugada. Como la API no manda explícitamente "quién la bajó",
-     * se infiere: la jugada nace siempre con un solo dueño en la primera bajada
-     * (mínimo 3 cartas) y los embones se agregan de a una; en un trío los embones
-     * siempre se agregan al final, así que la primera carta del arreglo es
-     * siempre del dueño original. Es una inferencia razonable, no un dato posta
-     * del servidor — en una escalera que se extendió por abajo después de un
-     * embone ajeno, podría marcar de más; no hay forma de evitarlo sin que el
-     * servidor mande el dueño original explícito.
-     */
-    function duenoDeLaJugada(juego) {
-        return juego.cartas.length > 0 ? juego.cartas[0].propietarioId : null;
-    }
-
     function renderMesaJugadas(mesa, miId) {
         limpiar(elJugadas);
         var idsJuegos = Object.keys(mesa || {});
@@ -139,7 +124,9 @@
 
         idsJuegos.forEach(function (juegoId) {
             var juego = mesa[juegoId];
-            var creador = duenoDeLaJugada(juego);
+            // Marca de dueño: SOLO en las cartas cuyo dueño es distinto al que bajó
+            // la jugada. creadorId lo manda la API explícitamente (no se infiere).
+            var creador = juego.creadorId;
 
             var wrap = document.createElement('div');
             wrap.className = 'jugada';

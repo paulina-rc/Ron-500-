@@ -41,7 +41,7 @@ class MotorBajarEmbonarTest extends CasoDePruebaRumi
     public function test_no_se_puede_embonar_sin_haberse_bajado_antes(): void
     {
         $mesa = [
-            'ajeno' => new JuegoMesa('ajeno', JuegoMesa::TRIO, [
+            'ajeno' => new JuegoMesa('ajeno', JuegoMesa::TRIO, 'j2', [
                 new CartaEnMesa($this->carta('7', Palo::CORAZONES), 'j2'),
                 new CartaEnMesa($this->carta('7', Palo::DIAMANTES), 'j2'),
                 new CartaEnMesa($this->carta('7', Palo::PICAS), 'j2'),
@@ -64,7 +64,7 @@ class MotorBajarEmbonarTest extends CasoDePruebaRumi
     public function test_los_puntos_del_embone_son_de_quien_lo_puso_no_del_dueno_del_juego(): void
     {
         $mesa = [
-            'j1trio' => new JuegoMesa('j1trio', JuegoMesa::TRIO, [
+            'j1trio' => new JuegoMesa('j1trio', JuegoMesa::TRIO, 'j1', [
                 new CartaEnMesa($this->carta('7', Palo::CORAZONES), 'j1'),
                 new CartaEnMesa($this->carta('7', Palo::DIAMANTES), 'j1'),
                 new CartaEnMesa($this->carta('7', Palo::PICAS), 'j1'),
@@ -101,7 +101,7 @@ class MotorBajarEmbonarTest extends CasoDePruebaRumi
     public function test_una_escalera_se_puede_extender_por_abajo_y_por_arriba(): void
     {
         $mesa = [
-            'esc' => new JuegoMesa('esc', JuegoMesa::ESCALERA, [
+            'esc' => new JuegoMesa('esc', JuegoMesa::ESCALERA, 'j1', [
                 new CartaEnMesa($this->carta('4', Palo::CORAZONES), 'j1'),
                 new CartaEnMesa($this->carta('5', Palo::CORAZONES), 'j1'),
                 new CartaEnMesa($this->carta('6', Palo::CORAZONES), 'j1'),
@@ -126,5 +126,36 @@ class MotorBajarEmbonarTest extends CasoDePruebaRumi
         $conElSiete = MotorRumi::embonar($conElTres, 'j1', 'esc', $siete->id);
         $this->assertSame([3, 7], $conElSiete->mesa['esc']->rangoEscalera());
         $this->assertCount(5, $conElSiete->mesa['esc']->cartas);
+    }
+
+    public function test_una_escalera_embonada_por_abajo_por_otro_jugador_conserva_el_creador_original(): void
+    {
+        $mesa = [
+            'esc' => new JuegoMesa('esc', JuegoMesa::ESCALERA, 'j1', [
+                new CartaEnMesa($this->carta('4', Palo::CORAZONES), 'j1'),
+                new CartaEnMesa($this->carta('5', Palo::CORAZONES), 'j1'),
+                new CartaEnMesa($this->carta('6', Palo::CORAZONES), 'j1'),
+            ]),
+        ];
+
+        // j2 embona por abajo (3♥): el motor hace array_unshift, así que la carta
+        // de j1 deja de estar en la posición 0 del arreglo. El creadorId no debe
+        // depender de esa posición.
+        $tres = $this->carta('3', Palo::CORAZONES);
+        $estado = $this->estado(
+            manoJ1: [],
+            manoJ2: [$tres, $this->carta('9', Palo::PICAS)],
+            mesa: $mesa,
+            turno: 'j2',
+            fase: EstadoPartida::PUEDE_JUGAR,
+            j2Bajado: true,
+        );
+
+        $nuevo = MotorRumi::embonar($estado, 'j2', 'esc', $tres->id);
+        $juego = $nuevo->mesa['esc'];
+
+        $this->assertSame('j1', $juego->creadorId);
+        $this->assertSame($tres->id, $juego->cartas[0]->carta->id, 'el embone quedó primero en el arreglo');
+        $this->assertSame('j2', $juego->cartas[0]->propietarioId, 'pero su dueño es j2, no el creador del juego');
     }
 }

@@ -80,7 +80,7 @@ class IdsNumericosDeJugadorTest extends CasoDePruebaRumi
     public function test_puntos_de_ronda_calcula_correctamente_con_ids_numericos(): void
     {
         $mesa = [
-            'trio' => new JuegoMesa('trio', JuegoMesa::TRIO, [
+            'trio' => new JuegoMesa('trio', JuegoMesa::TRIO, '1', [
                 new CartaEnMesa($this->carta('7', Palo::CORAZONES), '1'),
                 new CartaEnMesa($this->carta('7', Palo::DIAMANTES), '1'),
                 new CartaEnMesa($this->carta('7', Palo::PICAS), '2'), // embonada por el jugador "2"

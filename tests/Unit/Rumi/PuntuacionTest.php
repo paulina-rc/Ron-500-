@@ -12,7 +12,7 @@ class PuntuacionTest extends CasoDePruebaRumi
     public function test_puntos_de_ronda_suman_mesa_mas_gane_menos_mano(): void
     {
         $mesa = [
-            'trio' => new JuegoMesa('trio', JuegoMesa::TRIO, [
+            'trio' => new JuegoMesa('trio', JuegoMesa::TRIO, 'j1', [
                 new CartaEnMesa($this->carta('A', Palo::CORAZONES), 'j1'), // 15
                 new CartaEnMesa($this->carta('A', Palo::DIAMANTES), 'j1'), // 15
                 new CartaEnMesa($this->carta('A', Palo::PICAS), 'j1'),     // 15

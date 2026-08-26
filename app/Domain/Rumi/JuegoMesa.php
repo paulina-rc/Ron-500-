@@ -12,13 +12,14 @@ final class JuegoMesa
     public function __construct(
         public readonly string $id,
         public readonly string $tipo,
+        public readonly string $creadorId,
         public array $cartas,
     ) {
     }
 
     public function clonar(): self
     {
-        return new self($this->id, $this->tipo, $this->cartas);
+        return new self($this->id, $this->tipo, $this->creadorId, $this->cartas);
     }
 
     /** @return Carta[] */
@@ -43,12 +44,13 @@ final class JuegoMesa
         return $rango;
     }
 
-    /** @return array{id: string, tipo: string, cartas: array} */
+    /** @return array{id: string, tipo: string, creadorId: string, cartas: array} */
     public function aArray(): array
     {
         return [
             'id' => $this->id,
             'tipo' => $this->tipo,
+            'creadorId' => $this->creadorId,
             'cartas' => array_values(array_map(fn (CartaEnMesa $c) => $c->aArray(), $this->cartas)),
         ];
     }
@@ -58,6 +60,7 @@ final class JuegoMesa
         return new self(
             $datos['id'],
             $datos['tipo'],
+            $datos['creadorId'],
             array_map(fn (array $c) => CartaEnMesa::desdeArray($c), $datos['cartas']),
         );
     }
