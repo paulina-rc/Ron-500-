@@ -40,9 +40,7 @@ final class MotorRumi
 
         $cartaObjetivo = $estado->basura[$indice];
         $cartasEncima = array_slice($estado->basura, $indice + 1);
-
-        $jugador = $estado->jugadores[$jugadorId];
-        $manoCandidata = array_merge($jugador->mano, $cartasEncima, [$cartaObjetivo]);
+        $manoCandidata = self::manoCandidataParaBasura($estado, $jugadorId, $indice);
 
         if (! Reglas::existeJugadaLegalParaCarta($cartaObjetivo, $manoCandidata, $estado, $jugadorId)) {
             throw new JugadaIlegalException(
@@ -173,13 +171,35 @@ final class MotorRumi
             $nuevo->turnoActual = $nuevo->siguienteJugador($jugadorId);
             $nuevo->fase = EstadoPartida::DEBE_COMER;
 
-            if (count($nuevo->mazo) === 0) {
+            if (! self::jugadorPuedeComer($nuevo, $nuevo->turnoActual)) {
                 $nuevo->rondaTerminada = true;
                 $nuevo->ganadorRonda = null;
             }
         }
 
         return $nuevo;
+    }
+
+    /**
+     * ¿Puede $jugadorId comer en el estado actual? Sí, si queda mazo, o si hay
+     * al menos una carta en la basura que pueda colocar legalmente en mesa.
+     */
+    public static function jugadorPuedeComer(EstadoPartida $estado, string $jugadorId): bool
+    {
+        if (count($estado->mazo) > 0) {
+            return true;
+        }
+
+        foreach (array_keys($estado->basura) as $indice) {
+            $cartaObjetivo = $estado->basura[$indice];
+            $manoCandidata = self::manoCandidataParaBasura($estado, $jugadorId, $indice);
+
+            if (Reglas::existeJugadaLegalParaCarta($cartaObjetivo, $manoCandidata, $estado, $jugadorId)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** Puntos de la ronda para $jugadorId: mesa suma (por dueño de cada carta) + gane - mano. */
@@ -251,5 +271,20 @@ final class MotorRumi
         }
 
         return null;
+    }
+
+    /**
+     * Las cartas que $jugadorId tendría disponibles como material si comiera desde
+     * $indice en la basura: su mano actual + las cartas de encima + la carta objetivo.
+     *
+     * @return Carta[]
+     */
+    private static function manoCandidataParaBasura(EstadoPartida $estado, string $jugadorId, int $indice): array
+    {
+        $cartaObjetivo = $estado->basura[$indice];
+        $cartasEncima = array_slice($estado->basura, $indice + 1);
+        $jugador = $estado->jugadores[$jugadorId];
+
+        return array_merge($jugador->mano, $cartasEncima, [$cartaObjetivo]);
     }
 }

@@ -131,9 +131,13 @@ La ronda termina de dos formas:
 Se queda sin cartas en la mano **y bota una carta a la basura**. Es obligatorio botar: no se puede salir bajando todo. La mano queda en 0 **después** del descarte.
 → Ese jugador recibe el **gane: +20 pts**.
 
-**B) Se acaba el mazo y nadie ha salido.**
-La ronda termina ahí. **No se revuelve la basura.**
-→ **Nadie recibe el gane.**
+**B) Se acaba el mazo.**
+Quedarse sin mazo NO corta la ronda. El juego sigue mientras los jugadores
+puedan comer de la basura. La basura no se revuelve para rehacer el mazo.
+
+La ronda termina cuando le toca a un jugador y **no puede comer**: no hay
+mazo y tampoco hay ninguna carta de la basura que pueda usar legalmente.
+→ Nadie recibe el gane.
 
 En ambos casos se puntea igual: mesa suma, mano resta.
 
