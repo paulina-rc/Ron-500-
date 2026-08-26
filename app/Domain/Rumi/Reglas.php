@@ -192,7 +192,15 @@ final class Reglas
     /**
      * ¿Existe alguna jugada legal (nuevo juego o embone) para colocar $carta en mesa,
      * usando $manoDisponible como material y el estado de la partida para saber si
-     * $jugadorId ya se bajó y qué hay en la mesa?
+     * $jugadorId ya se bajó y qué hay en la mesa, tal que además quede al menos una
+     * carta libre para botar? Bajar/embonar nunca pueden vaciar la mano (hay que
+     * botar siempre para cerrar el turno), así que una jugada que sí existe pero
+     * que obligaría a usar TODO el material disponible no cuenta como legal acá.
+     *
+     * Un trío o una escalera nuevos siempre se pueden armar con el mínimo de 3
+     * cartas (el resto del grupo es opcional), así que alcanza con exigir que
+     * $manoDisponible tenga más de 3 cartas en total. Embonar solo consume la
+     * carta misma, así que nunca vacía la mano por su cuenta.
      *
      * @param Carta[] $manoDisponible
      */
@@ -202,10 +210,12 @@ final class Reglas
         EstadoPartida $estado,
         string $jugadorId
     ): bool {
-        if (self::existeTrioParaCarta($carta, $manoDisponible)) {
+        $sobraCartaParaBotar = count($manoDisponible) > self::MIN_TRIO;
+
+        if ($sobraCartaParaBotar && self::existeTrioParaCarta($carta, $manoDisponible)) {
             return true;
         }
-        if (self::existeCorridaParaCarta($carta, $manoDisponible)) {
+        if ($sobraCartaParaBotar && self::existeCorridaParaCarta($carta, $manoDisponible)) {
             return true;
         }
 
