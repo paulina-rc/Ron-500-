@@ -121,11 +121,21 @@ button, input {
     cursor: pointer;
 }
 
-.boton:disabled { opacity: .5; cursor: default; }
+.boton:disabled {
+    background: rgba(247, 246, 242, .07);
+    color: rgba(247, 246, 242, .3);
+    border-color: rgba(247, 246, 242, .08);
+    cursor: not-allowed;
+    box-shadow: none;
+}
 
 .boton--fantasma {
-    background: rgba(247, 246, 242, .06);
+    background: rgba(247, 246, 242, .14);
     color: var(--fg);
+}
+
+.boton--fantasma:disabled {
+    background: rgba(247, 246, 242, .05);
 }
 
 .separador {
@@ -340,6 +350,13 @@ button, input {
     border: 1px dashed var(--linea);
     border-radius: 8px;
     background: rgba(247, 246, 242, .04);
+    transition: border-color .12s ease, background .12s ease;
+}
+
+.jugada--tocable {
+    cursor: pointer;
+    border-color: rgba(232, 162, 28, .55);
+    background: rgba(232, 162, 28, .07);
 }
 
 .jugada__cartas {
@@ -404,6 +421,35 @@ button, input {
     font-weight: 600;
 }
 
+.mensaje--error {
+    color: #F0968E;
+    font-weight: 600;
+}
+
+.fila-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.boton-mover {
+    appearance: none;
+    border: 1px solid rgba(247, 246, 242, .18);
+    background: rgba(247, 246, 242, .05);
+    color: rgba(247, 246, 242, .75);
+    font: 600 13px/1 var(--sans);
+    width: 38px;
+    height: 38px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.boton-mover:disabled {
+    color: rgba(247, 246, 242, .2);
+    background: rgba(247, 246, 242, .02);
+    cursor: not-allowed;
+}
+
 .fila-mano-titulo {
     display: flex;
     align-items: center;
@@ -423,6 +469,63 @@ button, input {
 }
 
 .mano .carta:not(:first-child) { margin-left: -22px; }
+
+.mano--inactiva { opacity: .55; }
+
+/* ---- hoja de confirmación (comer de la basura) ---- */
+
+.hoja-fondo {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 20, 24, .6);
+    z-index: 50;
+}
+
+.hoja {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    background: #163C45;
+    border: 1px solid rgba(247, 246, 242, .12);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    padding: 18px 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 51;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, .35);
+}
+
+.hoja__titulo {
+    font: 600 15px/1.2 var(--sans);
+    color: var(--fg);
+}
+
+.hoja__detalle {
+    font: 400 12.5px/1.5 var(--sans);
+    color: var(--fg-dim);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hoja__cartas {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.hoja__acciones {
+    display: flex;
+    gap: 10px;
+}
+
+.hoja__acciones .boton { flex: 1; }
 
 /* ---- estados de reconexión / error ---- */
 

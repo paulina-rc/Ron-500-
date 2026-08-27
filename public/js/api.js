@@ -43,9 +43,23 @@
         });
     }
 
+    /**
+     * Ejecuta una acción de juego (comer_mazo, comer_basura, bajar, embonar, botar).
+     * Devuelve {status, ok, cuerpo} tal cual: un 422 con el mensaje del motor no es
+     * un error de red, es una respuesta legítima que quien llama debe mostrar.
+     */
+    async function ejecutarAccion(codigo, token, payload) {
+        return peticionJson('/api/salas/' + encodeURIComponent(codigo) + '/accion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Jugador-Token': token, Accept: 'application/json' },
+            body: JSON.stringify(payload),
+        });
+    }
+
     window.RumiApi = {
         crearSala: crearSala,
         unirseSala: unirseSala,
         obtenerEstado: obtenerEstado,
+        ejecutarAccion: ejecutarAccion,
     };
 })();

@@ -103,6 +103,9 @@
      * @param {number} [opciones.ancho=60]
      * @param {'me'|'opp'|null} [opciones.dueno]  marca de color; null = sin marca (carta propia del juego, no embonada)
      * @param {boolean} [opciones.destacada]      resalta el borde (carta obligatoria)
+     * @param {boolean} [opciones.seleccionada]   la levanta y le da un halo claro (selección del jugador)
+     * @param {boolean} [opciones.atenuada]       la apaga visualmente (no es su turno / no corresponde todavía)
+     * @param {function} [opciones.onTap]         si se pasa, la carta queda tocable
      */
     function crear(numero, palo, opciones) {
         opciones = opciones || {};
@@ -113,13 +116,25 @@
         var esDiezOMas = numero === '10';
         var dueno = opciones.dueno || null;
         var barraAncho = dueno ? Math.max(4, r(ancho * 0.08)) : 0;
+        var elevada = opciones.seleccionada ? ' translateY(-10px)' : '';
 
         var carta = document.createElement('div');
         carta.className = 'carta';
         carta.style.cssText = 'position:relative;width:' + ancho + 'px;height:' + alto + 'px;box-sizing:border-box;'
             + 'border-radius:' + radio + 'px;background:#F7F6F2;overflow:hidden;flex:none;'
-            + 'border:' + (opciones.destacada ? '2px solid ' + COLOR_YO : '1px solid rgba(16,28,32,.20)') + ';'
-            + 'box-shadow:' + (opciones.destacada ? '0 0 0 3px rgba(232,162,28,.28)' : '0 1px 2px rgba(16,51,59,.22)');
+            + 'transform:' + (elevada || 'none') + ';transition:transform .12s ease,opacity .12s ease;'
+            + 'opacity:' + (opciones.atenuada ? '.45' : '1') + ';'
+            + (opciones.onTap ? 'cursor:pointer;-webkit-tap-highlight-color:transparent;' : '')
+            + 'border:' + (opciones.seleccionada ? '2px solid #F7F6F2' : (opciones.destacada ? '2px solid ' + COLOR_YO : '1px solid rgba(16,28,32,.20)')) + ';'
+            + 'box-shadow:' + (
+                opciones.seleccionada
+                    ? '0 8px 16px rgba(16,51,59,.45)' + (opciones.destacada ? ',0 0 0 3px rgba(232,162,28,.28)' : '')
+                    : (opciones.destacada ? '0 0 0 3px rgba(232,162,28,.28)' : '0 1px 2px rgba(16,51,59,.22)')
+            );
+
+        if (opciones.onTap) {
+            carta.addEventListener('click', opciones.onTap);
+        }
 
         if (dueno) {
             var barra = document.createElement('div');
@@ -153,16 +168,27 @@
         return carta;
     }
 
-    /** El dorso del mazo: un cuadro con la cuenta de cartas restantes. */
-    function crearDorso(ancho, cantidad) {
+    /**
+     * El dorso del mazo: un cuadro con la cuenta de cartas restantes.
+     * @param {object} [opciones]
+     * @param {boolean} [opciones.atenuado]
+     * @param {function} [opciones.onTap]
+     */
+    function crearDorso(ancho, cantidad, opciones) {
+        opciones = opciones || {};
         var alto = r(ancho * ASPECTO);
         var relleno = Math.max(3, r(ancho * 0.07));
 
         var caja = document.createElement('div');
         caja.style.cssText = 'width:' + ancho + 'px;height:' + alto + 'px;border-radius:' + r(ancho * 0.105) + 'px;'
-            + 'box-sizing:border-box;padding:' + relleno + 'px;background:#F7F6F2;'
+            + 'box-sizing:border-box;padding:' + relleno + 'px;background:#F7F6F2;opacity:' + (opciones.atenuado ? '.45' : '1') + ';'
+            + (opciones.onTap ? 'cursor:pointer;-webkit-tap-highlight-color:transparent;' : '')
             + 'border:1px solid rgba(16,28,32,.20);display:flex;align-items:center;justify-content:center;flex:none;'
             + 'box-shadow:inset 0 0 0 ' + relleno + 'px #F7F6F2,inset 0 0 0 ' + (relleno + 1) + 'px rgba(31,95,168,.55)';
+
+        if (opciones.onTap) {
+            caja.addEventListener('click', opciones.onTap);
+        }
 
         var interior = document.createElement('div');
         interior.textContent = cantidad;

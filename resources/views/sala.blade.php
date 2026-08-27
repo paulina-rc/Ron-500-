@@ -72,6 +72,13 @@
 
             <div class="pie">
                 <div id="mensaje" class="mensaje"></div>
+                <div class="fila-acciones">
+                    <button id="btn-bajar" class="boton" disabled>Bajar</button>
+                    <button id="btn-botar" class="boton boton--fantasma" disabled>Botar</button>
+                    <div style="flex:1"></div>
+                    <button id="btn-mover-izq" class="boton-mover" disabled aria-label="Mover a la izquierda">◀</button>
+                    <button id="btn-mover-der" class="boton-mover" disabled aria-label="Mover a la derecha">▶</button>
+                </div>
                 <div class="fila-mano-titulo">
                     <span class="panel-titulo">TU MANO</span>
                     <span id="mano-cantidad" style="font:400 9.5px/1 Archivo,sans-serif;color:rgba(247,246,242,.4)"></span>
@@ -81,6 +88,16 @@
         </div>
 
         <div id="aviso-reconectar" class="aviso-reconectar oculto">Reconectando…</div>
+
+        <div id="hoja-fondo" class="hoja-fondo oculto"></div>
+        <div id="hoja-comer" class="hoja oculto">
+            <div class="hoja__titulo">Comer de la basura</div>
+            <div id="hoja-comer-detalle" class="hoja__detalle"></div>
+            <div class="hoja__acciones">
+                <button id="hoja-comer-cancelar" class="boton boton--fantasma">Cancelar</button>
+                <button id="hoja-comer-confirmar" class="boton">Confirmar</button>
+            </div>
+        </div>
     </div>
 
     <script src="{{ asset('js/almacenamiento.js') }}"></script>
