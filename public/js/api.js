@@ -56,7 +56,17 @@
         });
     }
 
+    /** Pide repartir la ronda siguiente. Si el rival ya la pidió, devuelve la misma. */
+    async function siguienteRonda(codigo, token) {
+        return peticionJson('/api/salas/' + encodeURIComponent(codigo) + '/siguiente-ronda', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Jugador-Token': token, Accept: 'application/json' },
+            body: '{}',
+        });
+    }
+
     window.RumiApi = {
+        siguienteRonda: siguienteRonda,
         crearSala: crearSala,
         unirseSala: unirseSala,
         obtenerEstado: obtenerEstado,

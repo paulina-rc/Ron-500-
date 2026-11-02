@@ -41,4 +41,26 @@ class PuntuacionTest extends CasoDePruebaRumi
         $this->assertSame(0, MotorRumi::puntosDeRonda($estado, 'j1'));
         $this->assertSame(0, MotorRumi::puntosDeRonda($estado, 'j2'));
     }
+
+    public function test_el_desglose_separa_mesa_gane_y_mano(): void
+    {
+        $mesa = [
+            'trio' => new JuegoMesa('trio', JuegoMesa::TRIO, 'j1', [
+                new CartaEnMesa($this->carta('K', Palo::CORAZONES), 'j1'), // 10
+                new CartaEnMesa($this->carta('K', Palo::DIAMANTES), 'j1'), // 10
+                new CartaEnMesa($this->carta('K', Palo::PICAS), 'j1'),     // 10
+                new CartaEnMesa($this->carta('K', Palo::TREBOLES), 'j2'),  // 10, embone de j2
+            ]),
+        ];
+
+        $estado = $this->estado(
+            manoJ1: [],
+            manoJ2: [$this->carta('A', Palo::CORAZONES)], // 15
+            mesa: $mesa,
+        );
+        $estado->ganadorRonda = 'j1';
+
+        $this->assertSame(['mesa' => 30, 'gane' => 20, 'mano' => 0, 'total' => 50], MotorRumi::desgloseDeRonda($estado, 'j1'));
+        $this->assertSame(['mesa' => 10, 'gane' => 0, 'mano' => 15, 'total' => -5], MotorRumi::desgloseDeRonda($estado, 'j2'));
+    }
 }

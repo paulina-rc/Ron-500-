@@ -69,12 +69,7 @@ class SalaController extends Controller
             return response()->noContent();
         }
 
-        $estado = EstadoPartida::desdeArray($partida->estado);
-
-        return response()->json(array_merge(
-            ['version' => $partida->version, 'salaEstado' => $sala->estado],
-            $servicio->vistaParaJugador($estado, $jugador->idDominio())
-        ));
+        return response()->json($servicio->respuestaParaJugador($sala, $partida, $jugador->idDominio()));
     }
 
     public function accion(Request $request, Sala $sala, PartidaService $servicio): JsonResponse
@@ -117,12 +112,29 @@ class SalaController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        $estadoNuevo = EstadoPartida::desdeArray($partidaActualizada->estado);
+        $servicio->cerrarSalaSiHayGanador($sala);
 
-        return response()->json(array_merge(
-            ['version' => $partidaActualizada->version, 'salaEstado' => $sala->estado],
-            $servicio->vistaParaJugador($estadoNuevo, $jugadorId)
-        ));
+        return response()->json($servicio->respuestaParaJugador($sala->refresh(), $partidaActualizada, $jugadorId));
+    }
+
+    public function siguienteRonda(Request $request, Sala $sala, PartidaService $servicio): JsonResponse
+    {
+        $jugador = $this->autenticar($request, $sala);
+        if ($jugador instanceof JsonResponse) {
+            return $jugador;
+        }
+
+        if ($sala->partidas()->doesntExist()) {
+            return response()->json(['message' => 'La partida todavía no arrancó.'], 422);
+        }
+
+        try {
+            $partida = $servicio->siguienteRonda($sala);
+        } catch (JugadaIlegalException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json($servicio->respuestaParaJugador($sala->refresh(), $partida, $jugador->idDominio()));
     }
 
     /** Resuelve el jugador dueño del token para $sala, o un 401 si el token no le pertenece a nadie de esta sala. */

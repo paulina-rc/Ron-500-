@@ -28,7 +28,7 @@
             <div class="cab">
                 <div class="cab__marca">
                     <span class="marca">Rumi 500</span>
-                    <span style="font:600 11px/1 Archivo,sans-serif">Sala {{ $codigo }}</span>
+                    <span style="font:600 11px/1 Archivo,sans-serif">Sala {{ $codigo }} · <span id="cab-ronda">Ronda 1</span></span>
                 </div>
                 <div class="pill-turno" id="pill-turno">
                     <span class="pill-turno__punto" id="pill-turno-punto"></span>
@@ -38,16 +38,18 @@
                     <div class="marcador">
                         <span class="marcador__etiqueta" style="color:#E8A21C">VOS</span>
                         <span class="marcador__valor" id="marcador-yo">0</span>
+                        <span class="marcador__ronda" id="marcador-yo-ronda" title="Puntos de la ronda en curso"></span>
                     </div>
                     <div class="marcador">
-                        <span class="marcador__etiqueta" style="color:#8B6BE0">RIVAL</span>
+                        <span class="marcador__etiqueta" style="color:#8B6BE0" id="marcador-rival-nombre">RIVAL</span>
                         <span class="marcador__valor" id="marcador-rival">0</span>
+                        <span class="marcador__ronda" id="marcador-rival-ronda" title="Puntos de la ronda en curso"></span>
                     </div>
                 </div>
             </div>
 
             <div class="franja-rival">
-                <span class="panel-titulo">RIVAL</span>
+                <span class="panel-titulo" id="rival-nombre">RIVAL</span>
                 <div class="dorsos-rival" id="dorsos-rival"></div>
                 <span id="rival-cantidad" style="font:400 9.5px/1 Archivo,sans-serif;color:rgba(247,246,242,.4)"></span>
             </div>
@@ -96,6 +98,23 @@
             <div class="hoja__acciones">
                 <button id="hoja-comer-cancelar" class="boton boton--fantasma">Cancelar</button>
                 <button id="hoja-comer-confirmar" class="boton">Confirmar</button>
+            </div>
+        </div>
+
+        <div id="hoja-ronda" class="hoja hoja--ronda oculto">
+            <div class="hoja__titulo" id="hoja-ronda-titulo"></div>
+            <div class="hoja__detalle" id="hoja-ronda-subtitulo"></div>
+            <table class="tabla-ronda">
+                <thead>
+                    <tr><th></th><th>Mesa</th><th>Gane</th><th>Mano</th><th>Ronda</th><th>Total</th></tr>
+                </thead>
+                <tbody id="hoja-ronda-filas"></tbody>
+            </table>
+            <div class="hoja__detalle" id="hoja-ronda-meta"></div>
+            <div class="hoja__acciones">
+                <button id="hoja-ronda-ver-mesa" class="boton boton--fantasma">Ver mesa</button>
+                <button id="hoja-ronda-siguiente" class="boton">Siguiente ronda</button>
+                <a id="hoja-ronda-inicio" class="boton oculto" href="/">Nueva partida</a>
             </div>
         </div>
     </div>

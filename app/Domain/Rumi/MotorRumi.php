@@ -217,19 +217,36 @@ final class MotorRumi
     /** Puntos de la ronda para $jugadorId: mesa suma (por dueño de cada carta) + gane - mano. */
     public static function puntosDeRonda(EstadoPartida $estado, string $jugadorId): int
     {
+        return self::desgloseDeRonda($estado, $jugadorId)['total'];
+    }
+
+    /**
+     * Los puntos de la ronda separados en sus tres partes, para poder mostrarlos.
+     *
+     * @return array{mesa: int, gane: int, mano: int, total: int}
+     */
+    public static function desgloseDeRonda(EstadoPartida $estado, string $jugadorId): array
+    {
         $puntosMesa = 0;
         foreach ($estado->mesa as $juego) {
             foreach ($juego->cartas as $cartaEnMesa) {
-                if ($cartaEnMesa->propietarioId === $jugadorId) {
+                if ((string) $cartaEnMesa->propietarioId === $jugadorId) {
                     $puntosMesa += $cartaEnMesa->carta->puntos();
                 }
             }
         }
 
-        $gane = $estado->ganadorRonda === $jugadorId ? 20 : 0;
+        $gane = $estado->ganadorRonda !== null && (string) $estado->ganadorRonda === $jugadorId
+            ? Reglas::PUNTOS_GANE
+            : 0;
         $puntosMano = $estado->jugadores[$jugadorId]->puntosEnMano();
 
-        return $puntosMesa + $gane - $puntosMano;
+        return [
+            'mesa' => $puntosMesa,
+            'gane' => $gane,
+            'mano' => $puntosMano,
+            'total' => $puntosMesa + $gane - $puntosMano,
+        ];
     }
 
     private static function validarTurno(EstadoPartida $estado, string $jugadorId): void

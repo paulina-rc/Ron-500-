@@ -281,6 +281,12 @@ button, input {
     font: 600 15px/1 var(--sans);
 }
 
+.marcador__ronda {
+    font: 400 8.5px/1 var(--mono);
+    color: var(--fg-dim);
+    min-height: 8px;
+}
+
 /* ---- mesa: rival ---- */
 
 .franja-rival {
@@ -526,6 +532,56 @@ button, input {
 }
 
 .hoja__acciones .boton { flex: 1; }
+
+/* ---- hoja de fin de ronda ---- */
+
+.tabla-ronda {
+    width: 100%;
+    border-collapse: collapse;
+    font: 400 12px/1 var(--mono);
+    color: var(--fg);
+}
+
+.tabla-ronda th {
+    font: 500 8.5px/1 var(--mono);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    text-align: right;
+    padding: 0 0 8px;
+}
+
+.tabla-ronda td {
+    text-align: right;
+    padding: 9px 0;
+    border-top: 1px solid rgba(247, 246, 242, .1);
+}
+
+.tabla-ronda td:first-child,
+.tabla-ronda th:first-child {
+    text-align: left;
+    font-family: var(--sans);
+    font-weight: 600;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tabla-ronda td:last-child {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.tabla-ronda .neg { color: #F0968E; }
+
+.mensaje--tocable {
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+a.boton { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
 
 /* ---- estados de reconexión / error ---- */
 

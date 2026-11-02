@@ -28,17 +28,23 @@
         return 'rumi:orden-mano:' + codigo.toUpperCase();
     }
 
-    /** El orden en que el jugador acomodó su mano: nunca se manda al servidor. */
-    function guardarOrdenMano(codigo, idsEnOrden) {
-        localStorage.setItem(claveOrden(codigo), JSON.stringify(idsEnOrden));
+    /**
+     * El orden en que el jugador acomodó su mano: nunca se manda al servidor.
+     * Se guarda junto con el número de ronda, porque en cada ronda se reparten
+     * cartas con los mismos ids y un orden viejo desacomodaría la mano nueva.
+     */
+    function guardarOrdenMano(codigo, idsEnOrden, ronda) {
+        localStorage.setItem(claveOrden(codigo), JSON.stringify({ ronda: ronda || 1, ids: idsEnOrden }));
     }
 
-    function obtenerOrdenMano(codigo) {
+    function obtenerOrdenMano(codigo, ronda) {
         var crudo = localStorage.getItem(claveOrden(codigo));
         if (!crudo) return [];
         try {
             var datos = JSON.parse(crudo);
-            return Array.isArray(datos) ? datos : [];
+            if (Array.isArray(datos)) return (ronda || 1) === 1 ? datos : []; // formato viejo, sin ronda
+            if (!datos || datos.ronda !== (ronda || 1) || !Array.isArray(datos.ids)) return [];
+            return datos.ids;
         } catch (e) {
             return [];
         }
