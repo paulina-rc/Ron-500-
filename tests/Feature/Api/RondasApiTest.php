@@ -128,6 +128,18 @@ class RondasApiTest extends TestCase
         $this->assertSame(Sala::TERMINADA, $sala->fresh()->estado);
     }
 
+    public function test_el_estado_dice_quien_soy_para_poder_reconectar_con_solo_el_token(): void
+    {
+        $creado = $this->postJson('/api/salas', ['nombre' => 'Paulina'])->json();
+
+        $esperando = $this->getJson("/api/salas/{$creado['codigo']}/estado?version=-1", ['X-Jugador-Token' => $creado['token']]);
+        $this->assertSame((string) $creado['jugadorId'], $esperando->json('yo'));
+
+        $segundo = $this->postJson("/api/salas/{$creado['codigo']}/unirse", ['nombre' => 'Hilda'])->json();
+        $jugando = $this->getJson("/api/salas/{$creado['codigo']}/estado?version=-1", ['X-Jugador-Token' => $segundo['token']]);
+        $this->assertSame((string) $segundo['jugadorId'], $jugando->json('yo'));
+    }
+
     // ---- ayudantes ----
 
     /** @return array{0: Sala, 1: array{id:string,token:string}, 2: array{id:string,token:string}} */

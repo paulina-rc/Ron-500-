@@ -141,6 +141,7 @@ class PartidaService
             [
                 'version' => $partida->version,
                 'salaEstado' => $sala->estado,
+                'yo' => $jugadorId,
                 'ronda' => count($marcador['rondas']),
                 'nombres' => $nombres,
                 'marcador' => $marcador,

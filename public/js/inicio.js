@@ -5,6 +5,17 @@
     var formCrear = document.getElementById('form-crear');
     var formUnirse = document.getElementById('form-unirse');
 
+    // Invitación: /?unirse=ABCD deja el código listo y pide solo el nombre.
+    var invitacion = new URLSearchParams(window.location.search).get('unirse');
+    if (invitacion && /^[A-Za-z]{4}$/.test(invitacion)) {
+        document.getElementById('codigo-unirse').value = invitacion.toUpperCase();
+        var separador = document.querySelector('.separador');
+        formUnirse.parentNode.insertBefore(formUnirse, formCrear);
+        formUnirse.parentNode.insertBefore(separador, formCrear);
+        var nombreUnirse = document.getElementById('nombre-unirse');
+        nombreUnirse.focus();
+    }
+
     function mostrarError(mensaje) {
         elError.textContent = mensaje;
         elError.classList.remove('oculto');

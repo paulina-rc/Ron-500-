@@ -58,11 +58,42 @@
     var hojaRondaSiguiente = document.getElementById('hoja-ronda-siguiente');
     var hojaRondaInicio = document.getElementById('hoja-ronda-inicio');
 
-    var sesion = RumiStorage.obtenerSesion(codigo);
-    if (!sesion || !sesion.token || !sesion.jugadorId) {
-        vistaSinAcceso.classList.remove('oculto');
-        return;
+    var btnInvitar = document.getElementById('btn-invitar');
+    var btnSala = document.getElementById('btn-sala');
+    var hojaSala = document.getElementById('hoja-sala');
+    var hojaSalaCerrar = document.getElementById('hoja-sala-cerrar');
+    var hojaSalaCopiar = document.getElementById('hoja-sala-copiar');
+
+    var sesion = null;
+
+    /**
+     * Enlace personal (/salas/ABCD#t=TOKEN): sirve para retomar la partida desde
+     * otro teléfono o navegador. Se valida el token con el servidor, se guarda
+     * la sesión y se borra el token de la barra de direcciones.
+     */
+    async function sesionDesdeEnlace() {
+        var m = /(?:^#|&)t=([A-Za-z0-9]+)/.exec(window.location.hash);
+        if (!m) return null;
+        history.replaceState(null, '', window.location.pathname);
+        try {
+            var r = await RumiApi.obtenerEstado(codigo, m[1], -1);
+            if (!r.ok || !r.cuerpo || !r.cuerpo.yo) return null;
+            var nueva = { token: m[1], jugadorId: r.cuerpo.yo };
+            RumiStorage.guardarSesion(codigo, nueva);
+            return nueva;
+        } catch (e) {
+            return null;
+        }
     }
+
+    (async function arrancar() {
+        sesion = (await sesionDesdeEnlace()) || RumiStorage.obtenerSesion(codigo);
+        if (!sesion || !sesion.token || !sesion.jugadorId) {
+            vistaSinAcceso.classList.remove('oculto');
+            return;
+        }
+        ciclo();
+    })();
 
     // ---- estado local ----
 
@@ -151,6 +182,70 @@
     }
 
     // ---- acciones contra el servidor ----
+
+    // ---- compartir ----
+
+    function avisarOk(texto) {
+        var el = document.createElement('div');
+        el.className = 'aviso-ok';
+        el.textContent = texto;
+        document.body.appendChild(el);
+        setTimeout(function () { el.remove(); }, 2200);
+    }
+
+    /** Copia al portapapeles; sin HTTPS no hay API de portapapeles, así que hay un plan B. */
+    async function copiar(texto) {
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(texto);
+                return true;
+            }
+        } catch (e) { /* plan B */ }
+        var area = document.createElement('textarea');
+        area.value = texto;
+        area.setAttribute('readonly', '');
+        area.style.position = 'fixed';
+        area.style.opacity = '0';
+        document.body.appendChild(area);
+        area.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        area.remove();
+        return ok;
+    }
+
+    async function compartirInvitacion() {
+        var url = window.location.origin + '/?unirse=' + codigo;
+        var texto = '¿Una de Rumi 500? Entrá con el código ' + codigo;
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'Rumi Quinientos', text: texto, url: url });
+                return;
+            } catch (e) {
+                if (e && e.name === 'AbortError') return; // la persona cerró el menú de compartir
+            }
+        }
+        avisarOk((await copiar(texto + ': ' + url)) ? 'Invitación copiada' : 'Código: ' + codigo);
+    }
+
+    async function copiarEnlacePersonal() {
+        var url = window.location.origin + '/salas/' + codigo + '#t=' + sesion.token;
+        var ok = await copiar(url);
+        hojaSala.classList.add('oculto');
+        render();
+        avisarOk(ok ? 'Enlace copiado. Guardalo solo para vos.' : 'No se pudo copiar el enlace.');
+    }
+
+    btnInvitar.addEventListener('click', compartirInvitacion);
+    btnSala.addEventListener('click', function () {
+        hojaSala.classList.remove('oculto');
+        hojaFondo.classList.remove('oculto');
+    });
+    hojaSalaCerrar.addEventListener('click', function () {
+        hojaSala.classList.add('oculto');
+        render();
+    });
+    hojaSalaCopiar.addEventListener('click', copiarEnlacePersonal);
 
     function irAlInicio() {
         RumiStorage.borrarSesion(codigo);
@@ -263,7 +358,10 @@
     btnMoverIzq.addEventListener('click', function () { moverSeleccionada(-1); });
     btnMoverDer.addEventListener('click', function () { moverSeleccionada(1); });
     hojaComerCancelar.addEventListener('click', cerrarHojaBasura);
-    hojaFondo.addEventListener('click', cerrarHojaBasura);
+    hojaFondo.addEventListener('click', function () {
+        hojaSala.classList.add('oculto');
+        cerrarHojaBasura();
+    });
     hojaComerConfirmar.addEventListener('click', confirmarComerBasura);
 
     // ---- render ----
@@ -357,10 +455,11 @@
     }
 
     function renderHojaRonda(e, miId, rivalId) {
-        var mostrar = e.rondaTerminada && hojaRondaOcultaEn !== e.ronda && !objetivoHojaBasura;
+        var hojaSalaAbierta = !hojaSala.classList.contains('oculto');
+        var mostrar = e.rondaTerminada && hojaRondaOcultaEn !== e.ronda && !objetivoHojaBasura && !hojaSalaAbierta;
         hojaRonda.classList.toggle('oculto', !mostrar);
         if (!mostrar) {
-            if (!objetivoHojaBasura) hojaFondo.classList.add('oculto');
+            hojaFondo.classList.toggle('oculto', !objetivoHojaBasura && !hojaSalaAbierta);
             return;
         }
         hojaFondo.classList.remove('oculto');
@@ -666,10 +765,8 @@
     }
 
     document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) {
+        if (!document.hidden && sesion) {
             ciclo();
         }
     });
-
-    ciclo();
 })();

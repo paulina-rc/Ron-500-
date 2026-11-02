@@ -192,6 +192,30 @@ button, input {
     color: var(--amber);
 }
 
+.cab__sala {
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font: 600 11px/1 var(--sans);
+    cursor: pointer;
+    text-align: left;
+}
+
+.aviso-ok {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    background: rgba(40, 140, 90, .95);
+    color: #fff;
+    font: 500 11px/1 var(--sans);
+    padding: 8px 14px;
+    border-radius: 99px;
+    z-index: 60;
+}
+
 .espera__ayuda {
     font: 400 13px/1.5 var(--sans);
     color: var(--fg-dim);
