@@ -73,6 +73,22 @@ puede probar con PHPUnit sin levantar nada.
 
 No avanzar a la 2 sin que las pruebas de la 1 estén verdes.
 
+### Estado actual (noviembre 2026)
+
+- [x] 1–4. Motor, persistencia, API e interfaz con acciones
+- [x] Rondas y partida a 500: `POST /api/salas/{sala}/siguiente-ronda` (idempotente,
+      alterna quién empieza), marcador acumulado, hoja de fin de ronda y de partida.
+      Supuestos: empieza el otro jugador cada ronda; empate exacto arriba de 500 = otra ronda.
+- [x] 5. Reconexión: sesión en localStorage + enlace personal `/salas/ABCD#t=TOKEN`;
+      invitación `/?unirse=ABCD`
+- [ ] 6. Deploy en cPanel (falta: sacar `bootstrap/cache/*.php` del repo, guía de subida,
+      MySQL, migraciones)
+
+Para probar localmente: `composer install`, `cp .env.example .env`,
+`php artisan key:generate`, `php artisan migrate`, `php artisan serve`.
+Se prueba con dos navegadores distintos (o uno en incógnito), porque la sesión
+de cada jugador vive en localStorage.
+
 ## Referencia del motor
 
 Existe una implementación de referencia **en JavaScript**, ya probada, con 35 pruebas
