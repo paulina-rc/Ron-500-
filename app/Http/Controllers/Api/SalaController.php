@@ -61,7 +61,7 @@ class SalaController extends Controller
 
         $partida = $sala->partidas()->latest('id')->first();
         if ($partida === null) {
-            return response()->json(['version' => 0, 'salaEstado' => $sala->estado]);
+            return response()->json(['version' => 0, 'salaEstado' => $sala->estado, 'yo' => $jugador->idDominio()]);
         }
 
         $versionCliente = (int) $request->query('version', -1);

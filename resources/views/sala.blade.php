@@ -13,14 +13,16 @@
 
         <div id="vista-sin-acceso" class="espera oculto">
             <span class="espera__etiqueta">Sin acceso</span>
-            <p class="espera__ayuda">Este dispositivo no tiene una sesión guardada para la sala {{ $codigo }}.</p>
-            <a href="/" class="boton">Volver al inicio</a>
+            <p class="espera__ayuda">Este dispositivo no está dentro de la sala {{ $codigo }}. Si te invitaron, unite con tu nombre. Si ya estabas jugando, abrí tu enlace personal desde el otro dispositivo.</p>
+            <a href="/?unirse={{ $codigo }}" class="boton">Unirme a esta sala</a>
+            <a href="/" class="boton boton--fantasma">Volver al inicio</a>
         </div>
 
         <div id="vista-espera" class="espera oculto">
             <span class="espera__etiqueta">Compartí este código</span>
             <span class="espera__codigo" id="espera-codigo">{{ $codigo }}</span>
             <div class="pulso"></div>
+            <button id="btn-invitar" class="boton">Compartir invitación</button>
             <p class="espera__ayuda">Esperando a que se una el otro jugador. Dejá esta pantalla abierta.</p>
         </div>
 
@@ -28,7 +30,7 @@
             <div class="cab">
                 <div class="cab__marca">
                     <span class="marca">Rumi 500</span>
-                    <span style="font:600 11px/1 Archivo,sans-serif">Sala {{ $codigo }} · <span id="cab-ronda">Ronda 1</span></span>
+                    <button id="btn-sala" class="cab__sala" aria-label="Opciones de la sala">Sala {{ $codigo }} · <span id="cab-ronda">Ronda 1</span> ▾</button>
                 </div>
                 <div class="pill-turno" id="pill-turno">
                     <span class="pill-turno__punto" id="pill-turno-punto"></span>
@@ -98,6 +100,17 @@
             <div class="hoja__acciones">
                 <button id="hoja-comer-cancelar" class="boton boton--fantasma">Cancelar</button>
                 <button id="hoja-comer-confirmar" class="boton">Confirmar</button>
+            </div>
+        </div>
+
+        <div id="hoja-sala" class="hoja oculto">
+            <div class="hoja__titulo">Sala {{ $codigo }}</div>
+            <div class="hoja__detalle">
+                <div><strong>Tu enlace personal</strong> sirve para seguir jugando desde otro teléfono o navegador. No se lo pasés a nadie: con ese enlace se juega por vos.</div>
+            </div>
+            <div class="hoja__acciones">
+                <button id="hoja-sala-cerrar" class="boton boton--fantasma">Cerrar</button>
+                <button id="hoja-sala-copiar" class="boton">Copiar mi enlace</button>
             </div>
         </div>
 
