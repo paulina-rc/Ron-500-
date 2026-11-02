@@ -12,6 +12,36 @@ final class Reglas
 
     public const MAX_ESCALERA = 13; // A a K
 
+    public const PUNTOS_GANE = 20; // sección 2: quien cierra la ronda
+
+    public const META_PARTIDA = 500; // sección 1
+
+    /**
+     * Sección 1: gana el primero que llegue a 500. Si en la misma ronda varios
+     * pasan de 500, gana el que tenga más. Si los que van primeros empatan
+     * exacto, no hay ganador todavía y se juega otra ronda.
+     *
+     * @param array<string, int> $totales puntos acumulados por jugador, al cierre de una ronda
+     */
+    public static function ganadorDeLaPartida(array $totales): ?string
+    {
+        if ($totales === []) {
+            return null;
+        }
+
+        $maximo = max($totales);
+        if ($maximo < self::META_PARTIDA) {
+            return null;
+        }
+
+        $lideres = array_keys($totales, $maximo, true);
+        if (count($lideres) !== 1) {
+            return null;
+        }
+
+        return (string) $lideres[0];
+    }
+
     /** @param Carta[] $cartas */
     public static function esTrioValido(array $cartas): bool
     {

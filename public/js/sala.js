@@ -22,6 +22,11 @@
     var elPillTexto = document.getElementById('pill-turno-texto');
     var elMarcadorYo = document.getElementById('marcador-yo');
     var elMarcadorRival = document.getElementById('marcador-rival');
+    var elMarcadorYoRonda = document.getElementById('marcador-yo-ronda');
+    var elMarcadorRivalRonda = document.getElementById('marcador-rival-ronda');
+    var elMarcadorRivalNombre = document.getElementById('marcador-rival-nombre');
+    var elRivalNombre = document.getElementById('rival-nombre');
+    var elCabRonda = document.getElementById('cab-ronda');
     var elDorsosRival = document.getElementById('dorsos-rival');
     var elRivalCantidad = document.getElementById('rival-cantidad');
     var elJugadas = document.getElementById('jugadas');
@@ -44,6 +49,15 @@
     var hojaComerCancelar = document.getElementById('hoja-comer-cancelar');
     var hojaComerConfirmar = document.getElementById('hoja-comer-confirmar');
 
+    var hojaRonda = document.getElementById('hoja-ronda');
+    var hojaRondaTitulo = document.getElementById('hoja-ronda-titulo');
+    var hojaRondaSubtitulo = document.getElementById('hoja-ronda-subtitulo');
+    var hojaRondaFilas = document.getElementById('hoja-ronda-filas');
+    var hojaRondaMeta = document.getElementById('hoja-ronda-meta');
+    var hojaRondaVerMesa = document.getElementById('hoja-ronda-ver-mesa');
+    var hojaRondaSiguiente = document.getElementById('hoja-ronda-siguiente');
+    var hojaRondaInicio = document.getElementById('hoja-ronda-inicio');
+
     var sesion = RumiStorage.obtenerSesion(codigo);
     if (!sesion || !sesion.token || !sesion.jugadorId) {
         vistaSinAcceso.classList.remove('oculto');
@@ -55,10 +69,12 @@
     var version = 0;
     var estadoActual = null;
     var seleccion = [];
-    var ordenManoLocal = RumiStorage.obtenerOrdenMano(codigo);
+    var ordenManoLocal = []; // se carga al recibir el primer estado, según la ronda
     var accionEnCurso = false;
     var errorActivo = null; // { mensaje, hasta }
     var objetivoHojaBasura = null; // id de la carta de basura que se está por comer
+    var rondaVista = null; // número de ronda del último estado aplicado
+    var hojaRondaOcultaEn = null; // ronda en la que el jugador cerró la hoja de resultados para ver la mesa
 
     var temporizador = null;
     var enVuelo = false;
@@ -112,7 +128,7 @@
             if (nuevoOrden.indexOf(id) < 0) nuevoOrden.push(id);
         });
         ordenManoLocal = nuevoOrden;
-        RumiStorage.guardarOrdenMano(codigo, ordenManoLocal);
+        RumiStorage.guardarOrdenMano(codigo, ordenManoLocal, rondaVista);
 
         var porId = {};
         manoServidor.forEach(function (c) { porId[c.id] = c; });
@@ -130,7 +146,7 @@
         copia.splice(i, 1);
         copia.splice(j, 0, id);
         ordenManoLocal = copia;
-        RumiStorage.guardarOrdenMano(codigo, ordenManoLocal);
+        RumiStorage.guardarOrdenMano(codigo, ordenManoLocal, rondaVista);
         render();
     }
 
@@ -162,7 +178,7 @@
             // éxito: refrescamos con la respuesta de la acción, sin esperar el próximo polling
             seleccion = [];
             version = r.cuerpo.version;
-            estadoActual = r.cuerpo;
+            aplicarEstado(r.cuerpo, false);
         } catch (e) {
             mostrarErrorTemporal('No se pudo conectar con el servidor. Reintentá.');
         } finally {
@@ -206,6 +222,42 @@
         ejecutar({ accion: 'embonar', juegoId: juegoId, cartaId: seleccion[0] });
     }
 
+    async function pedirSiguienteRonda() {
+        if (accionEnCurso) return;
+        accionEnCurso = true;
+        render();
+        try {
+            var r = await RumiApi.siguienteRonda(codigo, sesion.token);
+            if (r.status === 401) { irAlInicio(); return; }
+            if (!r.ok) {
+                mostrarErrorTemporal((r.cuerpo && r.cuerpo.message) || 'No se pudo arrancar la siguiente ronda.');
+                return;
+            }
+            version = r.cuerpo.version;
+            aplicarEstado(r.cuerpo, false);
+        } catch (e) {
+            mostrarErrorTemporal('No se pudo conectar con el servidor. Reintentá.');
+        } finally {
+            accionEnCurso = false;
+            render();
+        }
+    }
+
+    function abrirHojaRonda() {
+        hojaRondaOcultaEn = null;
+        render();
+    }
+
+    hojaRondaVerMesa.addEventListener('click', function () {
+        hojaRondaOcultaEn = estadoActual ? estadoActual.ronda : null;
+        render();
+    });
+    hojaRondaSiguiente.addEventListener('click', pedirSiguienteRonda);
+    hojaRondaInicio.addEventListener('click', function () { RumiStorage.borrarSesion(codigo); });
+    elMensaje.addEventListener('click', function () {
+        if (estadoActual && estadoActual.rondaTerminada) abrirHojaRonda();
+    });
+
     btnBajar.addEventListener('click', bajarSeleccion);
     btnBotar.addEventListener('click', botarSeleccion);
     btnMoverIzq.addEventListener('click', function () { moverSeleccionada(-1); });
@@ -241,6 +293,7 @@
 
         renderTurno(e, esMiTurno);
         renderMarcadores(e, miId, rivalId);
+        renderNombres(e, rivalId);
         renderRival(rival);
         renderMazo(e.cartasEnMazo, puedeComerAhora);
         renderBasura(e.basura, puedeComerAhora);
@@ -249,6 +302,7 @@
         renderMano(yo ? yo.mano : [], e.cartaObligatoriaId, puedeJugarCartasAhora);
         renderBotones(puedeJugarCartasAhora, e.cartaObligatoriaId);
         renderHojaBasura(e);
+        renderHojaRonda(e, miId, rivalId);
     }
 
     function renderTurno(e, esMiTurno) {
@@ -258,13 +312,116 @@
         elPill.style.background = esMiTurno ? 'rgba(232,162,28,.14)' : 'rgba(139,107,224,.14)';
         elPill.style.border = '1px solid ' + (esMiTurno ? 'rgba(232,162,28,.4)' : 'rgba(139,107,224,.4)');
 
-        elPillTexto.textContent = e.rondaTerminada ? 'RONDA TERMINADA' : (esMiTurno ? 'TU TURNO' : 'TURNO RIVAL');
+        if (e.ganadorPartida) {
+            elPillTexto.textContent = 'PARTIDA TERMINADA';
+        } else if (e.rondaTerminada) {
+            elPillTexto.textContent = 'RONDA TERMINADA';
+        } else {
+            elPillTexto.textContent = esMiTurno ? 'TU TURNO' : 'TURNO RIVAL';
+        }
     }
 
+    function nombreCorto(e, id) {
+        var nombre = (e.nombres && e.nombres[id]) || 'Rival';
+        return nombre.length > 12 ? nombre.slice(0, 11) + '…' : nombre;
+    }
+
+    function conSigno(n) {
+        return (n > 0 ? '+' : '') + n;
+    }
+
+    /**
+     * Arriba se ve el total acumulado de rondas cerradas; abajo, en chico, lo que
+     * va sumando la ronda en curso. Al cerrar la ronda, esa ya está en el total.
+     */
     function renderMarcadores(e, miId, rivalId) {
+        var totales = (e.marcador && e.marcador.totales) || {};
         var puntajes = e.puntajes || {};
-        elMarcadorYo.textContent = puntajes[miId] != null ? puntajes[miId] : 0;
-        elMarcadorRival.textContent = rivalId && puntajes[rivalId] != null ? puntajes[rivalId] : 0;
+        elMarcadorYo.textContent = totales[miId] != null ? totales[miId] : 0;
+        elMarcadorRival.textContent = rivalId && totales[rivalId] != null ? totales[rivalId] : 0;
+
+        if (e.rondaTerminada) {
+            elMarcadorYoRonda.textContent = '';
+            elMarcadorRivalRonda.textContent = '';
+        } else {
+            elMarcadorYoRonda.textContent = conSigno(puntajes[miId] || 0);
+            elMarcadorRivalRonda.textContent = rivalId ? conSigno(puntajes[rivalId] || 0) : '';
+        }
+    }
+
+    function renderNombres(e, rivalId) {
+        var nombre = rivalId ? nombreCorto(e, rivalId) : 'Rival';
+        elMarcadorRivalNombre.textContent = nombre.toUpperCase();
+        elRivalNombre.textContent = nombre.toUpperCase();
+        elCabRonda.textContent = 'Ronda ' + (e.ronda || 1);
+    }
+
+    function renderHojaRonda(e, miId, rivalId) {
+        var mostrar = e.rondaTerminada && hojaRondaOcultaEn !== e.ronda && !objetivoHojaBasura;
+        hojaRonda.classList.toggle('oculto', !mostrar);
+        if (!mostrar) {
+            if (!objetivoHojaBasura) hojaFondo.classList.add('oculto');
+            return;
+        }
+        hojaFondo.classList.remove('oculto');
+
+        var nombreRival = rivalId ? nombreCorto(e, rivalId) : 'Tu rival';
+        var terminoPartida = !!e.ganadorPartida;
+
+        if (terminoPartida) {
+            hojaRondaTitulo.textContent = e.ganadorPartida === miId
+                ? '¡Ganaste la partida!'
+                : nombreRival + ' ganó la partida';
+        } else {
+            hojaRondaTitulo.textContent = 'Fin de la ronda ' + e.ronda;
+        }
+
+        if (e.ganadorRonda === miId) {
+            hojaRondaSubtitulo.textContent = 'Saliste vos: te llevás el gane de +20.';
+        } else if (e.ganadorRonda) {
+            hojaRondaSubtitulo.textContent = nombreRival + ' salió y se lleva el gane de +20.';
+        } else {
+            hojaRondaSubtitulo.textContent = 'Nadie podía comer: la ronda terminó sin gane.';
+        }
+
+        limpiar(hojaRondaFilas);
+        var rondas = (e.marcador && e.marcador.rondas) || [];
+        var actual = rondas[rondas.length - 1];
+        var totales = (e.marcador && e.marcador.totales) || {};
+
+        [miId, rivalId].forEach(function (id) {
+            if (!id || !actual || !actual.puntos[id]) return;
+            var p = actual.puntos[id];
+            var fila = document.createElement('tr');
+            [
+                { texto: id === miId ? 'Vos' : nombreRival },
+                { texto: String(p.mesa) },
+                { texto: p.gane ? '+' + p.gane : '0' },
+                { texto: p.mano ? '−' + p.mano : '0', neg: p.mano > 0 },
+                { texto: conSigno(p.total), neg: p.total < 0 },
+                { texto: String(totales[id] != null ? totales[id] : 0), neg: totales[id] < 0 },
+            ].forEach(function (celda) {
+                var td = document.createElement('td');
+                td.textContent = celda.texto;
+                if (celda.neg) td.className = 'neg';
+                fila.appendChild(td);
+            });
+            hojaRondaFilas.appendChild(fila);
+        });
+
+        if (terminoPartida) {
+            hojaRondaMeta.textContent = 'Se jugaron ' + rondas.length + (rondas.length === 1 ? ' ronda.' : ' rondas.');
+        } else {
+            var faltaYo = (e.meta || 500) - (totales[miId] || 0);
+            hojaRondaMeta.textContent = faltaYo > 0
+                ? 'Te faltan ' + faltaYo + ' puntos para llegar a ' + (e.meta || 500) + '.'
+                : 'Pasaron los dos de ' + (e.meta || 500) + ' empatados: se juega otra ronda.';
+        }
+
+        hojaRondaSiguiente.classList.toggle('oculto', terminoPartida);
+        hojaRondaSiguiente.disabled = accionEnCurso;
+        hojaRondaSiguiente.textContent = accionEnCurso ? 'Repartiendo…' : 'Siguiente ronda';
+        hojaRondaInicio.classList.toggle('oculto', !terminoPartida);
     }
 
     function renderRival(rival) {
@@ -349,14 +506,12 @@
             return;
         }
 
+        elMensaje.classList.toggle('mensaje--tocable', !!e.rondaTerminada);
+
         if (e.rondaTerminada) {
-            if (e.ganadorRonda === miId) {
-                elMensaje.textContent = '¡Ganaste la ronda!';
-            } else if (e.ganadorRonda) {
-                elMensaje.textContent = 'Tu rival ganó la ronda.';
-            } else {
-                elMensaje.textContent = 'Nadie podía comer: la ronda terminó sin gane.';
-            }
+            elMensaje.textContent = e.ganadorPartida
+                ? 'La partida terminó. Tocá aquí para ver el resultado.'
+                : 'La ronda terminó. Tocá aquí para ver los puntos y seguir.';
             return;
         }
 
@@ -367,7 +522,7 @@
         }
 
         if (!esMiTurno) {
-            elMensaje.textContent = 'Turno de tu rival…';
+            elMensaje.textContent = 'Turno de ' + nombreCorto(e, e.turnoActual) + '…';
         } else if (e.fase === 'debe_comer') {
             elMensaje.textContent = 'Tocá el mazo o una carta de la basura para comer.';
         } else if (seleccion.length === 1) {
@@ -457,9 +612,20 @@
 
     // ---- polling ----
 
-    function aplicarEstado(cuerpo) {
+    /**
+     * Cuando arranca una ronda nueva, las cartas vuelven a tener los mismos ids
+     * (7H#1, 7H#2...) que en la ronda anterior, así que el orden guardado de la
+     * mano ya no sirve: se descarta y la mano nueva sale en el orden del reparto.
+     */
+    function aplicarEstado(cuerpo, renderizar) {
+        if (cuerpo.ronda !== rondaVista) {
+            ordenManoLocal = RumiStorage.obtenerOrdenMano(codigo, cuerpo.ronda);
+            seleccion = [];
+            objetivoHojaBasura = null;
+            rondaVista = cuerpo.ronda;
+        }
         estadoActual = cuerpo;
-        render();
+        if (renderizar !== false) render();
     }
 
     function programarSiguiente(demora) {
